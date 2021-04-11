@@ -1,0 +1,36 @@
+<!DOCTYPE>
+<html>
+    <head></head>
+    <body bgcolor = "white">
+
+      <div class="slidecontainer">
+        Slits <input type="range" min="1" max="6" value="2" class="slider" id="slitsSlide">
+          <span id="slitsText">2</span>
+        Wavelength <input type="range" min="1" max="10" value="4" class="slider" id="wavelengthSlide">
+          <span id="wavelengthText">4</span>
+        slitSeparation <input type="range" min="10" max="200" value="100" class="slider" id="slitSeparationSlide">
+          <span id="slitSeparationText">100</span>
+        slitWidth <input type="range" min="1" max="200" value="1" class="slider" id="slitWidthSlide">
+          <span id="slitWidthText">1</span>
+      </div>
+      <div class ="buttons">
+        <button id="hist">storeHistory</button>&nbsp;&nbsp;
+        <input type="checkbox" id="rec"> <label for="rec">Record Intensities</label>&nbsp;&nbsp;
+        <input type="checkbox" id="anim"><label for="anim">Animate</label>&nbsp;&nbsp;
+        <input type="checkbox" id="conf" checked=true><label for="conf">Confine Slit Size</label>&nbsp;&nbsp;
+        <input type="checkbox" id="show" checked=true><label for="show">Show 
+          <span style="color: #ff0000">Multiple</span> /
+          <span style="color: #1a8b0b">Single</span> slit contributions
+        </label>&nbsp;&nbsp;
+        <input type="checkbox" id="mirror" checked=true><label for="mirror">Mirror</label>&nbsp;&nbsp;
+        <a href ="DiffractionSimAnnotated.png">Instructions</a>
+      </div>
+
+        <canvas width="1200" height="800" id="screen"> </canvas>
+        <canvas width="1200" height="800" id="forground" hidden> </canvas>
+        <canvas width="1200" height="800" id="background" hidden> </canvas>
+
+      <script type='module' src='src/DiffractionSimulation.js'></script>
+
+    </body>
+</html>
