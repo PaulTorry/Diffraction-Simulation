@@ -11,7 +11,7 @@ const colours = (i, opacity = 1) => {
 
 // Draw foreground, the rays and sin waves and phasors
 
-function drawForground (c, slit, ray, wave, pos, viewScale, amp) {
+function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale }) {
   const geo = ray.geo
   const edges = ray.grating.edges.map(a => a) // .reverse().map(([a, b]) => [a + 2 * ray.grating.firstSlit, b + 2 * ray.grating.firstSlit])
 
@@ -88,6 +88,12 @@ function drawForground (c, slit, ray, wave, pos, viewScale, amp) {
     wavePhasor = wavePhasor.scale(ray.modulatedResultant.mag)
   }
 
+  if (!scale) {
+    const scaleFactor = scale ? 1 : slit.number * (slit.realWidth || 20) / 50
+    resultAmpitude = resultAmpitude * scaleFactor
+    wavePhasor = wavePhasor.scale(scaleFactor)
+  }
+
   drawLine(c, ...pos.phaseDiagram.addXY(100, 0), ...ray.modulatedResultant.scale(wave.amplitude * slit.number), 'black')
 
   // Resultant sin wave and phasor at right
@@ -125,14 +131,16 @@ function drawBackground (c, intensity, pos, amplitude, slit, { scale, show, amp 
   // Draw the intensity traces
 
   const traceAmplitude = amplitude * viewScale.intensity
+  console.log(slit.width, typeof slit.width)
+  const scaleFactor = scale ? 1 : slit.number * (slit.realWidth || 20) / 50
 
   if (show) {
-    drawTrace(c, intensity[0], pos.screen.x, 0, 'rgba(255, 0, 0, 0.3)', 0, 1, -traceAmplitude, 0, amp)
-    drawTrace(c, intensity[1], pos.screen.x, 0, 'rgba(0, 255, 0, 0.5)', 0, 1, -traceAmplitude, 0, amp)
+    drawTrace(c, intensity[0], pos.screen.x, 0, 'rgba(255, 0, 0, 0.3)', 0, 1, -traceAmplitude, 0, amp, scaleFactor)
+    drawTrace(c, intensity[1], pos.screen.x, 0, 'rgba(0, 255, 0, 0.5)', 0, 1, -traceAmplitude, 0, amp, scaleFactor)
   }
-  drawTrace(c, intensity[2], pos.screen.x, 0, 'black', 0, 1, -traceAmplitude, 0, amp)
-  drawTrace(c, intensity[3], pos.screen.x, 0, 'rgba(0, 0, 0, 0.2)', 0, 1, -traceAmplitude, 0, amp)
-  drawTrace(c, intensity[4], pos.screen.x - 100, 0, undefined, 0, 1, -traceAmplitude, 0, amp)
+  drawTrace(c, intensity[2], pos.screen.x, 0, 'black', 0, 1, -traceAmplitude, 0, amp, scaleFactor)
+  drawTrace(c, intensity[3], pos.screen.x, 0, 'rgba(0, 0, 0, 0.2)', 0, 1, -traceAmplitude, 0, amp, scaleFactor)
+  drawTrace(c, intensity[4], pos.screen.x - 100, 0, undefined, 0, 1, -traceAmplitude, 0, amp, scaleFactor)
 }
 
 export { drawForground, drawBackground }

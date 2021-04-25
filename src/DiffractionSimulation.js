@@ -22,17 +22,26 @@ const checkboxes = {
   // instant: document.getElementById('ins'),
   confine: document.getElementById('conf'),
   mirror: document.getElementById('mirror'),
-  amp: document.getElementById('amp')
+  amp: document.getElementById('amp'),
+  scale: document.getElementById('scale')
 }
 const buttons = {
   record: document.getElementById('hist')
 }
 
 const viewScale = { intensity: 7 }
-const settings = { animate: { run: false, notPaused: true }, record: false, confineSlitSize: true, show: false, mirror: true, amp: false }
+const settings = {
+  animate: { run: false, notPaused: true },
+  record: false,
+  confineSlitSize: true,
+  show: false,
+  mirror: true,
+  amp: false,
+  scale: true
+}
 const pos = { topViewXY: new Vec(1200, 600), grating: { x: 300, dx: 5 }, screen: { x: 900, dx: 4 }, phaseDiagram: new Vec(1000, 700) }
 
-let slit = new Grating(2, 1, 100)
+let slit = new Grating(2, 0, 100)
 const wave = { length: 4, phase: 0, amplitude: 20 }
 let displacement = 1
 let ray = new Ray(slit, displacement, pos.screen.x - pos.grating.x, wave)
@@ -107,32 +116,30 @@ function addEventListeners () {
   })
 
   checkboxes.animate.addEventListener('change', (e) => {
-    // console.log(checkboxes.animate)
     settings.animate.run = checkboxes.animate.checked
   })
   checkboxes.record.addEventListener('change', (e) => {
-    // console.log(checkboxes.animate)
     settings.record = checkboxes.record.checked
     if (!settings.record) intensity.clear(true)
     update()
   })
   checkboxes.confine.addEventListener('change', (e) => {
-    // console.log(checkboxes.animate)
     settings.confineSlitSize = checkboxes.confine.checked
   })
   checkboxes.show.addEventListener('change', (e) => {
-    // console.log(checkboxes.animate)
     settings.show = checkboxes.show.checked
     update()
   })
   checkboxes.mirror.addEventListener('change', (e) => {
-    // console.log(checkboxes.animate)
     settings.mirror = checkboxes.mirror.checked
     update()
   })
   checkboxes.amp.addEventListener('change', (e) => {
-    // console.log(checkboxes.animate)
     settings.amp = checkboxes.amp.checked
+    update()
+  })
+  checkboxes.scale.addEventListener('change', (e) => {
+    settings.scale = checkboxes.scale.checked
     update()
   })
   canvas.addEventListener('mousedown', e => { mouseCoords = new Vec(e.offsetX, e.offsetY); settings.animate.notPaused = false })
@@ -163,7 +170,7 @@ function update (fromSlider) {
   if (fromSlider && settings.record) { intensity.clear(true); intensity.addAllIntensities(ray, settings.mirror) }
   cx.clearRect(0, 0, cx.canvas.width, cx.canvas.height)
   drawBackground(cx, intensity.values, pos, wave.amplitude, slit, settings, viewScale)
-  drawForground(cx, slit, ray, wave, pos, viewScale, settings.amp)
+  drawForground(cx, slit, ray, wave, pos, viewScale, settings)
   // cx.clearRect(0, 0, cx.canvas.width, cx.canvas.height)
   // cx.drawImage(bx.canvas, 0, 0)
   // cx.drawImage(fx.canvas, 0, 0)

@@ -3,14 +3,16 @@ import { Vec } from '../Vec.js'
 
 class Grating {
   constructor (number = 2, width = 1, separation = 2) {
-    this.number = number; this.width = width; this.separation = separation
+    this.number = number; this.realWidth = width; this.separation = separation
     this.firstSlit = -((number - 1) / 2) * (separation) - width / 2
     this.centres = Array(Number.parseInt(number)).fill().map((_, i) => i * (separation) + width / 2)
     this.edges = this.centres.map((v) => [v - width / 2, v + width / 2])
     this.largestEdge = number * (separation) + width
   }
 
-  update (n = this.number, w = this.width, s = this.separation) {
+  get width () { return this.realWidth || 1 }
+
+  update (n = this.number, w = this.realWidth, s = this.separation) {
     return new Grating(n, w, s)
   }
 }
@@ -64,7 +66,6 @@ class IntensityPattern {
     const thisRay = ray.getRay(i - this.vSize / 2)
     const m = thisRay.normalisedResultant.mag
     const s = thisRay.singleSlitModulation
-    // const scale = this.calcScale()
     this.values[0][i] = m
     this.values[1][i] = s
     this.values[2][i] = m * s
