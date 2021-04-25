@@ -42,16 +42,19 @@ function drawLine (c, x1, y1, dx, dy, color) {
   c.beginPath()
 }
 
-function drawTrace (cx, array, startX = 0, startY = 0, colour = 'rgba(0, 0, 0, 0.4)', dx = 0, dy = 1, vx = 1, vy = 0) {
+function drawTrace (cx, array, startX = 0, startY = 0, colour = 'rgba(0, 0, 0, 0.4)', dx = 0, dy = 1, vx = 1, vy = 0, amp) {
   cx.beginPath()
   cx.moveTo(startX, startY)
   cx.strokeStyle = colour
   array.forEach((v, i, a) => {
+    const vv = amp ? v * v : v
     if (v * a[i - 1] === 0) {
-      cx.moveTo(startX + dx * i + vx * v, startY + dy * i + vy * v)
-    } else { cx.lineTo(startX + dx * i + vx * v, startY + dy * i + vy * v) }
+      cx.moveTo(startX + dx * i + vx * vv, startY + dy * i + vy * vv)
+    } else {
+      cx.lineTo(startX + dx * i + vx * vv, startY + dy * i + vy * vv)
+    }
   })
   cx.stroke()
 }
 
-export { drawLine, drawTrace, cosineCurve as newSin }
+export { drawLine, drawTrace, cosineCurve }

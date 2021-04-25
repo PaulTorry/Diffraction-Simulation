@@ -1,5 +1,5 @@
 import { Vec } from '../Vec.js'
-import { drawLine, drawTrace, newSin } from './drawFunctions.js'
+import { drawLine, drawTrace, cosineCurve } from './drawFunctions.js'
 
 // Each slit has a unique colour @TODO get opinions on these
 
@@ -11,7 +11,7 @@ const colours = (i, opacity = 1) => {
 
 // Draw foreground, the rays and sin waves and phasors
 
-function drawForground (c, slit, ray, wave, pos, viewScale) {
+function drawForground (c, slit, ray, wave, pos, viewScale, amp) {
   const geo = ray.geo
   const edges = ray.grating.edges.map(a => a) // .reverse().map(([a, b]) => [a + 2 * ray.grating.firstSlit, b + 2 * ray.grating.firstSlit])
 
@@ -24,7 +24,7 @@ function drawForground (c, slit, ray, wave, pos, viewScale) {
   drawLine(c, pos.grating.x, pos.topViewXY.y / 2, geo.D, geo.d)
 
   // waves arriving at grating
-  newSin(c, wave, pos.grating.x, slit.firstSlit + pos.topViewXY.y / 2, [-pos.grating.x, pos.grating.x])
+  cosineCurve(c, wave, pos.grating.x, slit.firstSlit + pos.topViewXY.y / 2, [-pos.grating.x, pos.grating.x])
 
   // waves, phasors at slit and at path difference
   let arrowStart = new Vec(0, 0)
@@ -45,8 +45,8 @@ function drawForground (c, slit, ray, wave, pos, viewScale) {
     const slitBottom = new Vec(pos.grating.x, bot + firstSlitPosY)
 
     // sincurves at angles
-    newSin(c, wave, ...slitTop, [0, geo.l / 2], 0, 1, geo.theta, colours(i, 0.4))
-    newSin(c, wave, ...slitBottom, [0, geo.l / 2], 0, 1, geo.theta, colours(i), getSinFill(-top * geo.sin, -bot * geo.sin))
+    cosineCurve(c, wave, ...slitTop, [0, geo.l / 2], 0, 1, geo.theta, colours(i, 0.4))
+    cosineCurve(c, wave, ...slitBottom, [0, geo.l / 2], 0, 1, geo.theta, colours(i), getSinFill(-top * geo.sin, -bot * geo.sin))
 
     // phasor at grating
     drawLine(c, ...slitTop, ...ray.phasorAtGrating.scale(wave.amplitude))
@@ -76,19 +76,24 @@ function drawForground (c, slit, ray, wave, pos, viewScale) {
     const [yyy, yy] = c.map(cc => cc * geo.sin)
     return [Math.min(-yyy, -yy), Math.max(Math.abs(-yyy + yy), 1), colours(i)]
   })
-
   // newSin(c, wave, 100, pos.topViewXY.y + 300, [0, 600], pos.grating.x, 1, 0, 'black', fills)
-  newSin(c, wave, 300, 700, [-150, 700], 0, 4, 0, 'black', fills)
+  cosineCurve(c, wave, 300, 700, [-150, 700], 0, 4, 0, 'black', fills)
   drawLine(c, 300, 600, 0, 200, 'black')
 
-  const finalPhasor = ray.resultant.scale(wave.amplitude * ray.singleSlitModulation)
-  const finalPhasorNorm = ray.normalisedResultant.scale(wave.amplitude * ray.singleSlitModulation)
-  drawLine(c, ...pos.phaseDiagram.addXY(100, 0), ...finalPhasor, 'black')
+  let resultAmpitude = ray.modulatedResultant.mag * wave.amplitude
+  let wavePhasor = ray.modulatedResultant.scale(wave.amplitude * viewScale.intensity)
+
+  if (amp) {
+    resultAmpitude = resultAmpitude * ray.modulatedResultant.mag
+    wavePhasor = wavePhasor.scale(ray.modulatedResultant.mag)
+  }
+
+  drawLine(c, ...pos.phaseDiagram.addXY(100, 0), ...ray.modulatedResultant.scale(wave.amplitude * slit.number), 'black')
 
   // Resultant sin wave and phasor at right
-  const newWave2 = { amplitude: wave.amplitude * ray.normalisedResultant.mag * ray.singleSlitModulation * viewScale.intensity, length: wave.length, phase: ray.resultant.phase - Math.PI / 2 }
-  newSin(c, newWave2, pos.screen.x, screenDisplacement, [0, wave.phase * wave.length], 0, 1, 0, 'black')
-  drawLine(c, pos.screen.x, screenDisplacement, ...finalPhasorNorm.scale(viewScale.intensity), 'black')
+  const newWave2 = { amplitude: resultAmpitude * viewScale.intensity, length: wave.length, phase: ray.modulatedResultant.phase - Math.PI / 2 }
+  cosineCurve(c, newWave2, pos.screen.x, screenDisplacement, [0, wave.phase * wave.length], 0, 1, 0, 'black')
+  drawLine(c, pos.screen.x, screenDisplacement, ...wavePhasor, 'black')
 }
 
 // The grating is drawn by rectangles, this function takes the edges of the slit, the top and bottom and makes pairs oy y-coords
@@ -105,8 +110,7 @@ function drawGrating (c, { edges: e, firstSlit: f, width: w }, vSize, x, dx) {
 *  Draws the areas for each section, the screen and the grating
 */
 
-function drawBackground (c, intensity, pos, amplitude, slit, show, viewScale) {
-
+function drawBackground (c, intensity, pos, amplitude, slit, { scale, show, amp }, viewScale) {
   // c.clearRect(0, 0, c.canvas.width, c.canvas.height)   - for canvas based optimisation
   c.fillStyle = 'lightgrey'
   c.strokeStyle = 'black'
@@ -119,14 +123,16 @@ function drawBackground (c, intensity, pos, amplitude, slit, show, viewScale) {
   drawGrating(c, slit, pos.topViewXY.y, pos.grating.x, pos.grating.dx)
 
   // Draw the intensity traces
+
   const traceAmplitude = amplitude * viewScale.intensity
+
   if (show) {
-    drawTrace(c, intensity[0], pos.screen.x, 0, 'rgba(255, 0, 0, 0.3)', 0, 1, -traceAmplitude, 0)
-    drawTrace(c, intensity[1], pos.screen.x, 0, 'rgba(0, 255, 0, 0.5)', 0, 1, -traceAmplitude, 0)
+    drawTrace(c, intensity[0], pos.screen.x, 0, 'rgba(255, 0, 0, 0.3)', 0, 1, -traceAmplitude, 0, amp)
+    drawTrace(c, intensity[1], pos.screen.x, 0, 'rgba(0, 255, 0, 0.5)', 0, 1, -traceAmplitude, 0, amp)
   }
-  drawTrace(c, intensity[2], pos.screen.x, 0, 'black', 0, 1, -traceAmplitude, 0)
-  drawTrace(c, intensity[3], pos.screen.x, 0, 'rgba(0, 0, 0, 0.2)', 0, 1, -traceAmplitude, 0)
-  drawTrace(c, intensity[4], pos.screen.x - 100, 0, undefined, 0, 1, -traceAmplitude, 0)
+  drawTrace(c, intensity[2], pos.screen.x, 0, 'black', 0, 1, -traceAmplitude, 0, amp)
+  drawTrace(c, intensity[3], pos.screen.x, 0, 'rgba(0, 0, 0, 0.2)', 0, 1, -traceAmplitude, 0, amp)
+  drawTrace(c, intensity[4], pos.screen.x - 100, 0, undefined, 0, 1, -traceAmplitude, 0, amp)
 }
 
 export { drawForground, drawBackground }

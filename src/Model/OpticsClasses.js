@@ -20,8 +20,9 @@ class Ray {
     this.grating = grating; this.wave = wave
     this.geo = Ray.getGeometry(d, D)
     this.phasorAtGrating = this.calculatePhasor(0)
-    this.resultant = grating.centres.reduce((p, c) => p.add(this.calculatePhasor(c)), new Vec(0, 0))
-    this.normalisedResultant = this.resultant.scale(1 / this.grating.number)
+    this.normalisedResultant = grating.centres.reduce((p, c) => p.add(this.calculatePhasor(c)), new Vec(0, 0))
+      .scale(1 / this.grating.number)
+    this.modulatedResultant = this.normalisedResultant.scale(this.singleSlitModulation)
   }
 
   get singleSlitModulation () {
@@ -29,13 +30,15 @@ class Ray {
     return 2 * Math.abs(Math.sin(0.5 * slitPhaseDifference) / slitPhaseDifference)
   }
 
+  calcIntensityMultiplier () { return this.grating.width * this.grating.number }
+
   calcIntegral (posA, posB) { return this.calculatePhasor(posA).integrateTo(this.calculatePhasor(posB)).scale(5 / (this.grating.width * this.geo.sin)) }
 
   calcPhasorPos (posOnGrating) { return Vec.unitX.rotate(this.geo.theta).scale(-posOnGrating * this.geo.sin) }
 
   calculatePhasor (posOnGrating) { return Vec.fromCircularCoords(1, -this.wave.phase + posOnGrating * this.geo.sin / this.wave.length) }
 
-  print (i = 0) { console.log(this.geo.sin, this.grating.edges[i], this.edgePhasors[i], this.resultant) }
+  print (i = 0) { console.log(this.geo.sin, this.grating.edges[i], this.edgePhasors[i], this.normalisedResultant) }
 
   getRay (d = 1) { return new Ray(this.grating, d, this.geo.D, this.wave) }
 
@@ -59,7 +62,9 @@ class IntensityPattern {
 
   addOneIntensity (ray, i, mirror) {
     const thisRay = ray.getRay(i - this.vSize / 2)
-    const m = thisRay.normalisedResultant.mag; const s = thisRay.singleSlitModulation
+    const m = thisRay.normalisedResultant.mag
+    const s = thisRay.singleSlitModulation
+    // const scale = this.calcScale()
     this.values[0][i] = m
     this.values[1][i] = s
     this.values[2][i] = m * s

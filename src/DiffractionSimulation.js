@@ -21,14 +21,15 @@ const checkboxes = {
   show: document.getElementById('show'),
   // instant: document.getElementById('ins'),
   confine: document.getElementById('conf'),
-  mirror: document.getElementById('mirror')
+  mirror: document.getElementById('mirror'),
+  amp: document.getElementById('amp')
 }
 const buttons = {
   record: document.getElementById('hist')
 }
 
 const viewScale = { intensity: 7 }
-const settings = { animate: { run: false, notPaused: true }, record: false, confineSlitSize: true, show: false, mirror: true }
+const settings = { animate: { run: false, notPaused: true }, record: false, confineSlitSize: true, show: false, mirror: true, amp: false }
 const pos = { topViewXY: new Vec(1200, 600), grating: { x: 300, dx: 5 }, screen: { x: 900, dx: 4 }, phaseDiagram: new Vec(1000, 700) }
 
 let slit = new Grating(2, 1, 100)
@@ -129,6 +130,11 @@ function addEventListeners () {
     settings.mirror = checkboxes.mirror.checked
     update()
   })
+  checkboxes.amp.addEventListener('change', (e) => {
+    // console.log(checkboxes.animate)
+    settings.amp = checkboxes.amp.checked
+    update()
+  })
   canvas.addEventListener('mousedown', e => { mouseCoords = new Vec(e.offsetX, e.offsetY); settings.animate.notPaused = false })
   canvas.addEventListener('mouseup', e => { mouseCoords = undefined; settings.animate.notPaused = true })
   canvas.addEventListener('dblclick', e => {
@@ -156,8 +162,8 @@ function update (fromSlider) {
   ray = new Ray(slit, displacement, pos.screen.x - pos.grating.x, wave)
   if (fromSlider && settings.record) { intensity.clear(true); intensity.addAllIntensities(ray, settings.mirror) }
   cx.clearRect(0, 0, cx.canvas.width, cx.canvas.height)
-  drawBackground(cx, intensity.values, pos, wave.amplitude, slit, settings.show, viewScale)
-  drawForground(cx, slit, ray, wave, pos, viewScale)
+  drawBackground(cx, intensity.values, pos, wave.amplitude, slit, settings, viewScale)
+  drawForground(cx, slit, ray, wave, pos, viewScale, settings.amp)
   // cx.clearRect(0, 0, cx.canvas.width, cx.canvas.height)
   // cx.drawImage(bx.canvas, 0, 0)
   // cx.drawImage(fx.canvas, 0, 0)
@@ -167,7 +173,7 @@ function animateIt (time, lastTime) {
   if (lastTime != null & settings.animate.run & settings.animate.notPaused) {
     wave.phase += (time - lastTime) * 0.002
     const newRay = ray.updatePhase(wave.phase)
-    if (ray.resultant.phase > newRay.resultant.phase) {
+    if (ray.normalisedResultant.phase > newRay.normalisedResultant.phase) {
       intensity.addIntensity(ray, undefined, settings.mirror)
     }
     update()
