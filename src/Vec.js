@@ -14,7 +14,6 @@ class Vec {
   scale (m) { return new Vec(this.x * m, this.y * m) }
   rotate (theta, around) { return Vec.rotate(this, theta, around) }
   rotate90 (scale, around) { return Vec.rotate90(this, scale, around) }
-  // toCircularCoords (a) { return Vec.toCircularCoords(this) }
   integrateTo (b) { return Vec.integrateBetween(this, b) }
   integrateFrom (a) { return Vec.integrateBetween(a, this) }
 
@@ -58,16 +57,8 @@ class Vec {
   static fromCircularCoords (r, theta) {
     return new Vec(r * Math.sin(theta), r * Math.cos(theta))
   }
-
-  // static toCircularCoords (a) {
-  //   return { r: Math.sqrt(a.x * a.x + a.y * a.y), theta: Math.atan2(a.y, a.x) }
-  // }
-
-  // static zero = new Vec(0, 0)
-  // static unitY = new Vec(0, 1)
-  // static unitX = new Vec(1, 0)
 }
-// Standard javascipt doesnt yet support staic variables
+// Standard javascipt lint doesnt yet support staic variables
 Vec.zero = new Vec(0, 0)
 Vec.unitY = new Vec(0, 1)
 Vec.unitX = new Vec(1, 0)

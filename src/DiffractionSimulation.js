@@ -6,8 +6,6 @@ import { drawForground, drawBackground } from './View/drawView.js'
 
 const canvas = document.querySelector('#screen')
 const cx = canvas.getContext('2d')
-const fx = document.querySelector('#forground').getContext('2d')
-const bx = document.querySelector('#background').getContext('2d')
 
 const sliders = {
   wave: { s: document.getElementById('wavelengthSlide'), t: document.getElementById('wavelengthText') },
@@ -19,11 +17,11 @@ const checkboxes = {
   animate: document.getElementById('anim'),
   record: document.getElementById('rec'),
   show: document.getElementById('show'),
-  // instant: document.getElementById('ins'),
   confine: document.getElementById('conf'),
   mirror: document.getElementById('mirror'),
   amp: document.getElementById('amp'),
-  scale: document.getElementById('scale')
+  scale: document.getElementById('scale'),
+  switchZoom: document.getElementById('switchZoom')
 }
 const buttons = {
   record: document.getElementById('hist')
@@ -31,13 +29,14 @@ const buttons = {
 
 const viewScale = { intensity: 7 }
 const settings = {
-  animate: { run: false, notPaused: true },
+  animate: { run: true, notPaused: true },
   record: false,
   confineSlitSize: true,
   show: false,
   mirror: true,
   amp: false,
-  scale: true
+  scale: true,
+  switchZoom: false
 }
 const pos = { topViewXY: new Vec(1200, 600), grating: { x: 300, dx: 5 }, screen: { x: 900, dx: 4 }, phaseDiagram: new Vec(1000, 700) }
 
@@ -142,6 +141,10 @@ function addEventListeners () {
     settings.scale = checkboxes.scale.checked
     update()
   })
+  checkboxes.switchZoom.addEventListener('change', (e) => {
+    settings.switchZoom = checkboxes.switchZoom.checked
+    update()
+  })
   canvas.addEventListener('mousedown', e => { mouseCoords = new Vec(e.offsetX, e.offsetY); settings.animate.notPaused = false })
   canvas.addEventListener('mouseup', e => { mouseCoords = undefined; settings.animate.notPaused = true })
   canvas.addEventListener('dblclick', e => {
@@ -171,9 +174,6 @@ function update (fromSlider) {
   cx.clearRect(0, 0, cx.canvas.width, cx.canvas.height)
   drawBackground(cx, intensity.values, pos, wave.amplitude, slit, settings, viewScale)
   drawForground(cx, slit, ray, wave, pos, viewScale, settings)
-  // cx.clearRect(0, 0, cx.canvas.width, cx.canvas.height)
-  // cx.drawImage(bx.canvas, 0, 0)
-  // cx.drawImage(fx.canvas, 0, 0)
 }
 
 function animateIt (time, lastTime) {

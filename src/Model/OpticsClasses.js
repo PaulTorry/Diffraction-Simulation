@@ -2,8 +2,9 @@
 import { Vec } from '../Vec.js'
 
 class Grating {
-  constructor (number = 2, width = 1, separation = 2) {
-    this.number = number; this.realWidth = width; this.separation = separation
+  constructor (number = 2, w = 1, separation = 2) {
+    const width = w || 1
+    this.number = number; this.realWidth = w; this.separation = separation
     this.firstSlit = -((number - 1) / 2) * (separation) - width / 2
     this.centres = Array(Number.parseInt(number)).fill().map((_, i) => i * (separation) + width / 2)
     this.edges = this.centres.map((v) => [v - width / 2, v + width / 2])
