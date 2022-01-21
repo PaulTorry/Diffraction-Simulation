@@ -79,7 +79,8 @@ class IntensityPattern {
   }
 
   addIntensity (ray, d = ray.geo.d, mirror) {
-    const screenD = d + this.vSize / 2
+    // console.log("addintensity", ray, d, mirror);
+    const screenD = Math.ceil(d + this.vSize / 2)
     for (let i = screenD - 3; i <= screenD + 3; i++) {
       if (i > 0 && i < this.vSize) {
         this.addOneIntensity(ray, i, mirror)

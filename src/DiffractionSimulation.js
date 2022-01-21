@@ -62,6 +62,7 @@ function addEventListeners () {
   })
 
   function dragEvent (a, b) {
+    // console.log(a,b);
     const d = b.subtract(a)
     if (d.x * d.x > 16 * d.y * d.y || a.x < pos.grating.x || a.x > pos.screen.x || a.y > pos.topViewXY.y) {
       wave.phase += (d.x) * 0.5 / wave.length
@@ -145,6 +146,17 @@ function addEventListeners () {
     settings.switchZoom = checkboxes.switchZoom.checked
     update()
   })
+  canvas.addEventListener('touchstart', ({ touches: [e] }) => { mouseCoords = new Vec(e.pageX, e.pageY); settings.animate.notPaused = false })
+  canvas.addEventListener('touchend', ({ touches: [e] }) => { mouseCoords = undefined; settings.animate.notPaused = true })
+  canvas.addEventListener('touchmove', ({ touches: [e] }) => {
+    // console.log('touchmove', e.pageX)
+    if (mouseCoords) {
+      const b = new Vec(e.pageX, e.pageY)
+      dragEvent(mouseCoords, b)
+      mouseCoords = b
+    }
+  })
+
   canvas.addEventListener('mousedown', e => { mouseCoords = new Vec(e.offsetX, e.offsetY); settings.animate.notPaused = false })
   canvas.addEventListener('mouseup', e => { mouseCoords = undefined; settings.animate.notPaused = true })
   canvas.addEventListener('dblclick', e => {

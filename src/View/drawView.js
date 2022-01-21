@@ -150,7 +150,7 @@ function drawBackground (c, intensity, pos, amplitude, slit, { scale, show, amp,
   // Draw the intensity traces
 
   const traceAmplitude = amplitude * viewScale.intensity
-  console.log(slit.width, typeof slit.width)
+  // console.log(slit.width, typeof slit.width)
   const scaleFactor = scale ? 1 : slit.number * (slit.realWidth || 20) / 50
 
   if (show) {
