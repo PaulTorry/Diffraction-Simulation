@@ -25,7 +25,6 @@
           <span id="slitWidthText">0</span>
       </div>
       <div class ="buttons">
-        <button id="hist">storeHistory</button>&nbsp;&nbsp;
         <input type="checkbox" id="rec"> <label for="rec">Record Intensities</label>&nbsp;&nbsp;
         <input type="checkbox" id="anim" checked=true><label for="anim">Animate</label>&nbsp;&nbsp;
         <input type="checkbox" id="conf" checked=true><label for="conf">Confine Slit Size</label>&nbsp;&nbsp;
@@ -37,10 +36,12 @@
         <input type="checkbox" id="scale" checked=true><label for="scale">Scale</label>&nbsp;&nbsp;
         <input type="checkbox" id="amp"><label for="amp">Intensity A<sup>2</sup></label>&nbsp;&nbsp;
         <input type="checkbox" id="switchZoom"><label for="switchZoom">SwitchZoom</label>&nbsp;&nbsp;
+      </div>
+      <div>
+        <button id="hist">storeHistory</button>&nbsp;&nbsp;
         <a href ="DiffractionSimAnnotated.png">Instructions</a>
         <input type="checkbox" id="smallscreen"><label for="smallscreen">SmallScreen</label>&nbsp;&nbsp;
       </div>
-
         <canvas width="1200" height="800" id="screen"> </canvas>
 
       <script type='module' src='src/DiffractionSimulation.js'></script>

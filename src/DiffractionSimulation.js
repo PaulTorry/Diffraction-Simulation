@@ -37,9 +37,15 @@ const settings = {
   mirror: true,
   amp: false,
   scale: true,
-  switchZoom: false
+  switchZoom: false,
+  smallscreen: false
 }
-const pos = { topViewXY: new Vec(1200, 600), grating: { x: 300, dx: 5 }, screen: { x: 900, dx: 4 }, phaseDiagram: new Vec(1050, 700) }
+const pos = {
+  topViewXY: new Vec(1200, 600),
+  grating: { x: 300, dx: 5 },
+  screen: { x: 900, dx: 4 },
+  phaseDiagram: new Vec(1050, 700)
+}
 
 let slit = new Grating(2, 0, 100)
 const wave = { length: 4, phase: 0, amplitude: 20 }
@@ -148,22 +154,21 @@ function addEventListeners () {
     update()
   })
   checkboxes.smallscreen.addEventListener('change', (e) => {
-    console.log(checkboxes.smallscreen.checked);
-    compactify( checkboxes.smallscreen.checked)
+    settings.smallscreen = checkboxes.smallscreen.checked
+    compactify(settings.smallscreen)
     update()
   })
   window.addEventListener('touchstart', ({ touches: [e] }) => { mouseCoords = new Vec(e.pageX, e.pageY); settings.animate.notPaused = false })
   window.addEventListener('touchend', ({ touches: [e] }) => { mouseCoords = undefined; settings.animate.notPaused = true })
-  window.addEventListener('touchmove', (E) => {
-    let { touches: [e] } = E
-    // console.log('touchmove', e.pageX)
+  window.addEventListener('touchmove', (event) => {
+    const { touches: [e] } = event
     if (mouseCoords) {
       const b = new Vec(e.pageX, e.pageY)
       dragEvent(mouseCoords, b)
       mouseCoords = b
-      if (checkboxes.smallscreen.checked) E.preventDefault()
+      if (settings.smallscreen) event.preventDefault()
     }
-  },{passive: false})
+  }, { passive: false })
 
   window.addEventListener('mousedown', e => { mouseCoords = new Vec(e.offsetX, e.offsetY); settings.animate.notPaused = false })
   window.addEventListener('mouseup', e => { mouseCoords = undefined; settings.animate.notPaused = true })
@@ -171,7 +176,7 @@ function addEventListeners () {
     settings.animate.run = !settings.animate.run
     checkboxes.animate.checked = settings.animate.run
   })
-  canvas.addEventListener('click', e => {
+  window.addEventListener('click', e => {
     if (e.detail === 3) {
       settings.record = !settings.record
       checkboxes.record.checked = settings.record
@@ -179,7 +184,7 @@ function addEventListeners () {
       checkboxes.animate.checked = false
     }
   })
-  canvas.addEventListener('mousemove', (e) => {
+  window.addEventListener('mousemove', (e) => {
     if (mouseCoords) {
       const b = new Vec(e.offsetX, e.offsetY)
       dragEvent(mouseCoords, b)
@@ -215,7 +220,6 @@ function compactify (small) {
     pos.phaseDiagram.y = 500
     canvas.style.position = 'absolute'
     // document.body.requestFullscreen()
-
   } else {
     pos.phaseDiagram.y = 700
     canvas.style.position = 'relative'
