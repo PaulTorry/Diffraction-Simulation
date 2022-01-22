@@ -80,13 +80,13 @@ function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale, switch
       const [yyy, yy] = c.map(cc => cc * -1 / 4)
       return [Math.min(-yyy, -yy), Math.max(Math.abs(-yyy + yy), 1), colours(i)]
     })
-    cosineCurve(c, wave2, 300, 700, [-150, 700], 0, 4, 0, 'black', fills)
+    cosineCurve(c, wave2, 300, pos.phaseDiagram.y, [-150, 500], 0, 4, 0, 'black', fills)
   } else {
     const fills = slit.edges.map((c, i, a) => {
       const [yyy, yy] = c.map(cc => cc * geo.sin)
       return [Math.min(-yyy, -yy), Math.max(Math.abs(-yyy + yy), 1), colours(i)]
     })
-    cosineCurve(c, wave, 300, 700, [-150, 700], 0, 4, 0, 'black', fills)
+    cosineCurve(c, wave, 300, pos.phaseDiagram.y, [-150, 500], 0, 4, 0, 'black', fills)
     drawLine(c, 300, 600, 0, 200, 'black')
   }
 
@@ -145,7 +145,7 @@ function drawBackground (c, intensity, pos, amplitude, slit, { scale, show, amp,
   // Draws the grating
   drawVerticalGrating(c, slit, pos.topViewXY.y, pos.grating.x, pos.grating.dx)
   if (switchZoom) {
-    drawHorizontalGrating(c, slit, 200, 600, pos.topViewXY.y + 10, pos.grating.dx, true)
+    drawHorizontalGrating(c, slit, 200, pos.phaseDiagram.y - 100, pos.topViewXY.y + 10, pos.grating.dx, true)
   }
   // Draw the intensity traces
 

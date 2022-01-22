@@ -21,7 +21,8 @@ const checkboxes = {
   mirror: document.getElementById('mirror'),
   amp: document.getElementById('amp'),
   scale: document.getElementById('scale'),
-  switchZoom: document.getElementById('switchZoom')
+  switchZoom: document.getElementById('switchZoom'),
+  smallscreen: document.getElementById('smallscreen')
 }
 const buttons = {
   record: document.getElementById('hist')
@@ -38,7 +39,7 @@ const settings = {
   scale: true,
   switchZoom: false
 }
-const pos = { topViewXY: new Vec(1200, 600), grating: { x: 300, dx: 5 }, screen: { x: 900, dx: 4 }, phaseDiagram: new Vec(1000, 700) }
+const pos = { topViewXY: new Vec(1200, 600), grating: { x: 300, dx: 5 }, screen: { x: 900, dx: 4 }, phaseDiagram: new Vec(1050, 700) }
 
 let slit = new Grating(2, 0, 100)
 const wave = { length: 4, phase: 0, amplitude: 20 }
@@ -146,20 +147,27 @@ function addEventListeners () {
     settings.switchZoom = checkboxes.switchZoom.checked
     update()
   })
-  canvas.addEventListener('touchstart', ({ touches: [e] }) => { mouseCoords = new Vec(e.pageX, e.pageY); settings.animate.notPaused = false })
-  canvas.addEventListener('touchend', ({ touches: [e] }) => { mouseCoords = undefined; settings.animate.notPaused = true })
-  canvas.addEventListener('touchmove', ({ touches: [e] }) => {
+  checkboxes.smallscreen.addEventListener('change', (e) => {
+    console.log(checkboxes.smallscreen.checked);
+    compactify( checkboxes.smallscreen.checked)
+    update()
+  })
+  window.addEventListener('touchstart', ({ touches: [e] }) => { mouseCoords = new Vec(e.pageX, e.pageY); settings.animate.notPaused = false })
+  window.addEventListener('touchend', ({ touches: [e] }) => { mouseCoords = undefined; settings.animate.notPaused = true })
+  window.addEventListener('touchmove', (E) => {
+    let { touches: [e] } = E
     // console.log('touchmove', e.pageX)
     if (mouseCoords) {
       const b = new Vec(e.pageX, e.pageY)
       dragEvent(mouseCoords, b)
       mouseCoords = b
+      if (checkboxes.smallscreen.checked) E.preventDefault()
     }
-  })
+  },{passive: false})
 
-  canvas.addEventListener('mousedown', e => { mouseCoords = new Vec(e.offsetX, e.offsetY); settings.animate.notPaused = false })
-  canvas.addEventListener('mouseup', e => { mouseCoords = undefined; settings.animate.notPaused = true })
-  canvas.addEventListener('dblclick', e => {
+  window.addEventListener('mousedown', e => { mouseCoords = new Vec(e.offsetX, e.offsetY); settings.animate.notPaused = false })
+  window.addEventListener('mouseup', e => { mouseCoords = undefined; settings.animate.notPaused = true })
+  window.addEventListener('dblclick', e => {
     settings.animate.run = !settings.animate.run
     checkboxes.animate.checked = settings.animate.run
   })
@@ -198,4 +206,19 @@ function animateIt (time, lastTime) {
     update()
   }
   requestAnimationFrame(newTime => animateIt(newTime, time))
+}
+
+function compactify (small) {
+  if (small) {
+    // console.log(canvas.style.position);
+    canvas.height = 600
+    pos.phaseDiagram.y = 500
+    canvas.style.position = 'absolute'
+    // document.body.requestFullscreen()
+
+  } else {
+    pos.phaseDiagram.y = 700
+    canvas.style.position = 'relative'
+    canvas.height = 800
+  }
 }
