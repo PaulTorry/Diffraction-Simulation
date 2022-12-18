@@ -1,46 +1,21 @@
 import { Vec } from '../Vec.js'
 
 /*
-*  c, canvas;   w, wave (length, amplitude, phase)
+*  c, canvas; 
 *  origin (the centre of rotation of the cosine curve, also where phase = w.phase)
 *  [Where the curve starts to draw (can be -ve), where the curve ends] - In local pixels before scaling
 *  pd, path difference;       scale (both x and y are muliplied to the screen)
 */
 
-// function cosineCurve (c, w, originX, originY, [start, length] = [0, 200], pd = 0, scale = 1, deflectionAngle = 0, colour = 'black', fill = [[0, 0, 'black']], trigFunc = Math.cos) {
-//   const dispAtX = (x, rectFunc = (a) => a) => rectFunc(w.amplitude * trigFunc(((x + pd)) / (w.length) - w.phase))
-//   const pageVec = (x, y) => new Vec(x, y).rotate(deflectionAngle).scale(scale).addXY(originX, originY)
-//   const plot = (x, dx, rectFunc) => {
-//     c.beginPath()
-//     c.moveTo(...pageVec(x, 0))
-//     for (let dl = x; dl <= x + dx; dl += 1 / scale) {
-//       c.lineTo(...pageVec(dl, dispAtX(dl, rectFunc)))
-//     }
-//     c.lineTo(...pageVec(x + dx, 0))
-//   }
-//   c.strokeStyle = colour
-//   plot(start / scale, length / scale)
-//   c.stroke()
-
-//   if (fill) {
-//     for (const [x, dx, col, func] of fill) {
-//       c.fillStyle = col
-//       plot(x, dx, func)
-//       c.stroke()
-//       c.fill()
-//     }
-//   }
-// }
-
-function sketchFunction (c, origin, [start, length] = [0, 200], func = Math.cos, colour = 'black', fill = false, angle = 0) {
+function sketchFunction (c, origin, [start, end] = [0, 200], func = Math.cos, colour = 'black', fill = false, angle = 0) {
   const pageVec = (x, y) => new Vec(x, y).rotate(angle).add(origin)
   c.strokeStyle = colour
   c.beginPath()
   c.moveTo(...pageVec(start, 0))
-  for (let dl = start; dl <= length; dl += 1) {
+  for (let dl = start; dl <= end; dl += 1) {
     c.lineTo(...pageVec(dl, func(dl)))
   }
-  c.lineTo(...pageVec(length, 0))
+  c.lineTo(...pageVec(end, 0))
   c.stroke()
   if (fill) { c.fillStyle = colour; c.fill() }
   c.beginPath()
@@ -54,6 +29,13 @@ function drawLine (c, x1, y1, dx, dy, color) {
   c.stroke()
   c.fill()
   c.beginPath()
+}
+
+function drawArrow (c, start, vec, color = 'black', headSize = 5) {
+  const end = start.add(vec)
+  drawLine(c, ...start, ...vec, color)
+  drawLine(c, ...end, ...vec.rotate(Math.PI * 5 / 4).normalise.scale(headSize), color)
+  drawLine(c, ...end, ...vec.rotate(Math.PI * 3 / 4).normalise.scale(headSize), color)
 }
 
 function drawTrace (cx, array, startX = 0, startY = 0, colour = 'rgba(0, 0, 0, 0.4)', dx = 0, dy = 1, vx = 1, vy = 0, amp, scaleFactor) {
@@ -72,4 +54,4 @@ function drawTrace (cx, array, startX = 0, startY = 0, colour = 'rgba(0, 0, 0, 0
   cx.stroke()
 }
 
-export { drawLine, drawTrace, sketchFunction }
+export { drawLine, drawTrace, sketchFunction, drawArrow }
