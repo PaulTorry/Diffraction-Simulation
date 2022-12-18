@@ -65,70 +65,40 @@ function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale, switch
     drawArrow(c, slitTop, ray.phasorAtGrating.scale(wave.amplitude))
 
     // on angled sin curve
-    // drawLine(c, ...slitTop.add(p1), ...ph1.scale(wave.amplitude))
-    // drawLine(c, ...slitBottom.add(p2), ...ph2.scale(wave.amplitude))
-    // drawLine(c, ...slitTop.add(ray.calcPhasorPos(top)), ...ray.calculatePhasor(top).scale(wave.amplitude))
-    // drawLine(c, ...slitBottom.add(ray.calcPhasorPos(bot)), ...ray.calculatePhasor(bot).scale(wave.amplitude))
     drawArrow(c, slitTop.add(ray.calcPhasorPos(top)), ray.calculatePhasor(top).scale(wave.amplitude))
     drawArrow(c, slitBottom.add(ray.calcPhasorPos(bot)), ray.calculatePhasor(bot).scale(wave.amplitude))
 
     // Phasors at botom and in sum
     const integral = ray.calcIntegral(top, bot)
     // vector at bottom
-    // drawLine(c, ...pos.phaseDiagram.addXY(-100, i * 40 - slit.number * 20 + 20), ...integral.scale(wave.amplitude), colours(i))
     drawArrow(c, pos.phaseDiagram.addXY(-100, i * 40 - slit.number * 20 + 20), integral.scale(wave.amplitude), colours(i))
     // vector added to sum
-    // drawLine(c, ...arrowStart.add(pos.phaseDiagram), ...integral.scale(wave.amplitude), colours(i))
     drawArrow(c, arrowStart.add(pos.phaseDiagram), integral.scale(wave.amplitude), colours(i))
     arrowStart = arrowStart.add(integral.scale(wave.amplitude))
 
-    // const integralPh = ph.integrateTo(ph2).scale(5 / (slit.width * geo.sin))
-    // drawLine(c, ...pos.phaseDiagram.addXY(-100, i * 40 - slit.number * 20 + 20), ...integral.scale(wave.amplitude), colours(i))
     drawArrow(c, pos.phaseDiagram.addXY(-100, i * 40 - slit.number * 20 + 20), integral.scale(wave.amplitude), colours(i))
   })
 
   // bottom wave with areas
-  // const fills = sd.centres.map((yy, i, a) => [yy * geo.sin, 3, colours(i)])
-
   if (switchZoom) {
-    // let { length, phase, amplitude } = wave
-    // length = length / (geo.sin * -4)
-    // const wave2 = { length, phase, amplitude }
-
-    // const fills = slit.edges.map((c, i, a) => {
-    //   const [yyy, yy] = c.map(cc => cc * -1 / 4)
-    //   return [Math.min(-yyy, -yy), Math.max(Math.abs(-yyy + yy), 1), colours(i)]
-    // })
-    // cosineCurve(c, wave2, 300, pos.phaseDiagram.y, [-150, 650], 0, 4, 0, 'black', fills)
-
     const waveFunc3 = transformFunc(waveFunc, 4, -geo.sin)
-
     sketchFunction(c, new Vec(300, pos.phaseDiagram.y), [-150, 500], waveFunc3, 'black')
     slit.edges.forEach((v, i, a) => {
       const [st, ed] = v.map(cc => cc * 1)
-      // const widthWithMin = [st, Math.max(ed, st + 4)]
       const widthWithMin = [Math.min(st, ed), Math.max(st, ed) + 4]
       sketchFunction(c, new Vec(300, pos.phaseDiagram.y), widthWithMin, waveFunc3, colours(i), true)
       sketchFunction(c, new Vec(300, pos.phaseDiagram.y), widthWithMin, waveFunc3, 'black', false)
     })
-    // sketchFunction(c, slitBottom, [-150, 500], (x) => Math.min(waveFunc(x), 0), 'red', true, geo.theta)
   } else {
-    // const fills = slit.edges.map((c, i, a) => {
-    //   const [yyy, yy] = c.map(cc => cc * geo.sin)
-    //   return [Math.min(-yyy, -yy), Math.max(Math.abs(-yyy + yy), 1), colours(i)]
-    // })
-    // cosineCurve(c, wave, 300, pos.phaseDiagram.y, [-150, 650], 0, 4, 0, 'black', fills)
     const waveFunc2 = transformFunc(waveFunc, 4, 1 / 4)
     sketchFunction(c, new Vec(300, pos.phaseDiagram.y), [-150, 500], waveFunc2, 'black')
     slit.edges.forEach((v, i, a) => {
       const [st, ed] = v.map(cc => cc * geo.sin * -1 * 4)
-      // const widthWithMin = [st, Math.max(ed, st + 4)]
       const widthWithMin = [Math.min(st, ed), Math.max(st, ed) + 4]
       sketchFunction(c, new Vec(300, pos.phaseDiagram.y), widthWithMin, waveFunc2, colours(i), true)
       sketchFunction(c, new Vec(300, pos.phaseDiagram.y), widthWithMin, waveFunc2, 'black', false)
     })
-
-    drawLine(c, 300, 600, 0, 200, 'black')
+    //  drawLine(c, 300, 600, 0, 200, 'red')
   }
 
   let resultAmpitude = ray.modulatedResultant.mag * wave.amplitude
@@ -145,14 +115,9 @@ function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale, switch
     wavePhasor = wavePhasor.scale(scaleFactor)
   }
 
-  // drawLine(c, ...pos.phaseDiagram.addXY(100, 0), ...ray.modulatedResultant.scale(wave.amplitude * slit.number), 'black')
   drawArrow(c, pos.phaseDiagram.addXY(100, 0), ray.modulatedResultant.scale(wave.amplitude * slit.number), 'black')
 
-
   // Resultant sin wave and phasor at right
-  // const newWave2 = { amplitude: resultAmpitude * viewScale.intensity, length: wave.length, phase: ray.modulatedResultant.phase - Math.PI / 2 }
-  // cosineCurve(c, newWave2, pos.screen.x, screenDisplacement + 10, [0, wave.phase * wave.length], 0, 1, 0, 'black')
-
   const waveFunc4 = transformFunc(Math.cos, resultAmpitude * viewScale.intensity, 1 / wave.length, -ray.modulatedResultant.phase + Math.PI / 2)
   sketchFunction(c, new Vec(pos.screen.x, screenDisplacement), [0, wave.phase * wave.length], waveFunc4)
 
@@ -160,27 +125,36 @@ function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale, switch
 }
 
 // The grating is drawn by rectangles, this function takes the edges of the slit, the top and bottom and makes pairs oy y-coords
-function drawVerticalGrating (c, { edges: e, firstSlit: f, width: w }, length, xpos, thickness) {
-  // Add the top and bottom of the grating  flatten to a set of pairs for drawing
-  [0].concat(e.flat().map((v) => v + f + length / 2)).concat([length])
-    .reduce((ac, cv, i, ar) => i % 2 ? ac.concat([[ar[i - 1], ar[i]]]) : ac, [])
-    // draw each pair as a rectangle
-    .forEach(([y1, y2], i, a) => { c.fillRect(xpos - thickness, y1, thickness * 2, y2 - y1) })
-}
+// function drawVerticalGrating (c, { edges: e, firstSlit: f, width: w }, length, xpos, thickness) {
+//   // Add the top and bottom of the grating  flatten to a set of pairs for drawing
+//   // [0].concat(e.flat().map((v) => v + f + length / 2)).concat([length])
+//   //   .reduce((ac, cv, i, ar) => i % 2 ? ac.concat([[ar[i - 1], ar[i]]]) : ac, [])
+//     // draw each pair as a rectangle
+//     capArray(e, 0, length, f + length / 2)
+//     .forEach(([y1, y2], i, a) => { c.fillRect(xpos - thickness, y1, thickness * 2, y2 - y1) })
+// }
 
-function drawHorizontalGrating (c, { edges: e, firstSlit: f, width: w }, longStart, length, transStart, thickness, horizontal, centered) {
-  // Add the top and bottom of the grating  flatten to a set of pairs for drawing
-  const flattenedEdges = [longStart].concat(e.flat().map((v) => v + longStart + 100)).concat([length + longStart])
-    .reduce((ac, cv, i, ar) => i % 2 ? ac.concat([[ar[i - 1], ar[i]]]) : ac, [])
-    // draw each pair as a rectangle
-  flattenedEdges.forEach(([x1, x2], i, a) => { c.fillRect(x1, transStart - thickness, x2 - x1, thickness * 2) })
-}
+// function drawHorizontalGrating (c, { edges: e, firstSlit: f, width: w }, longStart, length, transStart, thickness) {
+//     // draw each pair as a rectangle
+//      capArray(e, longStart, length + longStart, 100)
+//      // draw each pair as a rectangle
+//     .forEach(([x1, x2], i, a) => { c.fillRect(x1, transStart - thickness, x2 - x1, thickness * 2) })
+// }
+
+// function capArray (e, start, end, firstGap) {
+//   return [start].concat(e.flat().map((v) => v + start + firstGap)).concat([end])
+//     .reduce((ac, cv, i, ar) => i % 2 ? ac.concat([[ar[i - 1], ar[i]]]) : ac, [])
+// }
 
 /*
 *  Draws the areas for each section, the screen and the grating
 */
 
 function drawBackground (c, intensity, pos, amplitude, slit, { scale, show, amp, switchZoom }, viewScale) {
+  function capArray (e, start, end, firstGap) {
+    return [start].concat(e.flat().map((v) => v + start + firstGap)).concat([end])
+      .reduce((ac, cv, i, ar) => i % 2 ? ac.concat([[ar[i - 1], ar[i]]]) : ac, [])
+  }
   // c.clearRect(0, 0, c.canvas.width, c.canvas.height)   - for canvas based optimisation
   c.fillStyle = 'lightgrey'
   c.strokeStyle = 'black'
@@ -190,14 +164,21 @@ function drawBackground (c, intensity, pos, amplitude, slit, { scale, show, amp,
   c.strokeRect(pos.screen.x, 0, pos.screen.dx, pos.topViewXY.y)
 
   // Draws the grating
-  drawVerticalGrating(c, slit, pos.topViewXY.y, pos.grating.x, pos.grating.dx)
+  // function drawVerticalGrating (c, { edges: e, firstSlit: f, width: w }, length, xpos, thickness) {
+  // drawVerticalGrating(c, slit, pos.topViewXY.y, pos.grating.x + 100, pos.grating.dx)
+  capArray(slit.edges, 0, pos.topViewXY.y, slit.firstSlit + pos.topViewXY.y / 2)
+    .forEach(([y1, y2], i, a) => { c.fillRect(pos.grating.x - pos.grating.dx, y1, pos.grating.dx * 2, y2 - y1) })
   if (switchZoom) {
-    drawHorizontalGrating(c, slit, 200, pos.phaseDiagram.y - 100, pos.topViewXY.y + 10, pos.grating.dx, true)
-  }
+    // drawHorizontalGrating(c, slit, 200, pos.phaseDiagram.y - 100, pos.topViewXY.y + 30, pos.grating.dx, true)
+    // function drawHorizontalGrating (c, { edges: e, firstSlit: f, width: w }, longStart, length, transStart, thickness) {
+    // draw each pair as a rectangle
+    capArray(slit.edges, 200, pos.phaseDiagram.y + 100, 100)
+    // draw each pair as a rectangle
+      .forEach(([x1, x2], i, a) => { c.fillRect(x1, pos.topViewXY.y + 10 - pos.grating.dx, x2 - x1, pos.grating.dx * 2) })
+  } else drawLine(c, 300, 600, 0, 200, 'gray')
   // Draw the intensity traces
 
   const traceAmplitude = amplitude * viewScale.intensity
-  // console.log(slit.width, typeof slit.width)
   const scaleFactor = scale ? 1 : slit.number * (slit.realWidth || 20) / 50
 
   if (show) {
