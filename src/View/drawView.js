@@ -1,5 +1,5 @@
 import { Vec } from '../Vec.js'
-import { drawLine, drawTrace, cosineCurve } from './drawFunctions.js'
+import { drawLine, drawTrace, sketchFunction } from './drawFunctions.js'
 
 // Each slit has a unique colour @TODO get opinions on these
 
@@ -9,6 +9,9 @@ const colours = (i, opacity = 1) => {
   return col
 }
 
+function transformFunc (func, A = 1, B = 1, C = 0, D = 0) {
+  return (x) => A * func(B * x + C) + D
+}
 // Draw foreground, the rays and sin waves and phasors
 
 function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale, switchZoom }) {
@@ -24,7 +27,10 @@ function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale, switch
   drawLine(c, pos.grating.x, pos.topViewXY.y / 2, geo.D, geo.d)
 
   // waves arriving at grating
-  cosineCurve(c, wave, pos.grating.x, slit.firstSlit + pos.topViewXY.y / 2, [-pos.grating.x, pos.grating.x])
+    // cosineCurve(c, wave, pos.grating.x, slit.firstSlit + pos.topViewXY.y / 2, [-pos.grating.x, pos.grating.x])
+   let wavepos = new Vec(pos.grating.x, slit.firstSlit + pos.topViewXY.y / 2)
+   let waveFunc = transformFunc(Math.cos, wave.amplitude, 1 / wave.length, -wave.phase)
+   sketchFunction(c, wavepos, [-pos.grating.x, 0], waveFunc)
 
   // waves, phasors at slit and at path difference
   let arrowStart = new Vec(0, 0)
@@ -45,8 +51,15 @@ function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale, switch
     const slitBottom = new Vec(pos.grating.x, bot + firstSlitPosY)
 
     // sincurves at angles
-    cosineCurve(c, wave, ...slitTop, [0, geo.l / 2], 0, 1, geo.theta, colours(i, 0.4))
-    cosineCurve(c, wave, ...slitBottom, [0, geo.l / 2], 0, 1, geo.theta, colours(i), getSinFill(-top * geo.sin, -bot * geo.sin))
+    // cosineCurve(c, wave, ...slitTop, [0, geo.l / 2], 0, 1, geo.theta, colours(i, 0.4))
+    waveFunc = transformFunc(Math.cos, wave.amplitude, 1 / wave.length, -wave.phase)
+    sketchFunction(c, slitTop, [0, geo.l / 2], waveFunc, colours(i, 0.4), false, geo.theta)
+    // cosineCurve(c, wave, ...slitBottom, [0, geo.l / 2], 0, 1, geo.theta, colours(i), getSinFill(-top * geo.sin, -bot * geo.sin))
+
+    
+    sketchFunction(c, slitBottom, [0, geo.l / 2], waveFunc, colours(i), false, geo.theta)
+    sketchFunction(c, slitBottom, [-top * geo.sin, -bot * geo.sin], (x) => Math.max(waveFunc(x), 0), 'blue', true, geo.theta)
+    sketchFunction(c, slitBottom, [-top * geo.sin, -bot * geo.sin], (x) => Math.min(waveFunc(x), 0), 'red', true, geo.theta)
 
     // phasor at grating
     drawLine(c, ...slitTop, ...ray.phasorAtGrating.scale(wave.amplitude))
@@ -72,21 +85,47 @@ function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale, switch
   // bottom wave with areas
   // const fills = sd.centres.map((yy, i, a) => [yy * geo.sin, 3, colours(i)])
 
+ 
+
   if (switchZoom) {
-    let { length, phase, amplitude } = wave
-    length = length / (geo.sin * -4)
-    const wave2 = { length, phase, amplitude }
-    const fills = slit.edges.map((c, i, a) => {
-      const [yyy, yy] = c.map(cc => cc * -1 / 4)
-      return [Math.min(-yyy, -yy), Math.max(Math.abs(-yyy + yy), 1), colours(i)]
-    })
-    cosineCurve(c, wave2, 300, pos.phaseDiagram.y, [-150, 500], 0, 4, 0, 'black', fills)
+    // let { length, phase, amplitude } = wave
+    // length = length / (geo.sin * -4)
+    // const wave2 = { length, phase, amplitude }
+    
+    // const fills = slit.edges.map((c, i, a) => {
+    //   const [yyy, yy] = c.map(cc => cc * -1 / 4)
+    //   return [Math.min(-yyy, -yy), Math.max(Math.abs(-yyy + yy), 1), colours(i)]
+    // })
+    // cosineCurve(c, wave2, 300, pos.phaseDiagram.y, [-150, 650], 0, 4, 0, 'black', fills)
+
+    const waveFunc3 = transformFunc(waveFunc, 4, -geo.sin)
+
+     sketchFunction(c, new Vec(300, pos.phaseDiagram.y), [-150, 500], waveFunc3, 'black')
+     slit.edges.forEach((v, i, a) => {
+      const [st, ed] = v.map(cc => cc * 1 )
+      // const widthWithMin = [st, Math.max(ed, st + 4)]
+      const widthWithMin = [Math.min(st, ed), Math.max(st, ed) + 4]
+      sketchFunction(c, new Vec(300, pos.phaseDiagram.y), widthWithMin, waveFunc3, colours(i), true)
+      sketchFunction(c, new Vec(300, pos.phaseDiagram.y), widthWithMin, waveFunc3, 'black', false)
+      })
+    // sketchFunction(c, slitBottom, [-150, 500], (x) => Math.min(waveFunc(x), 0), 'red', true, geo.theta)
+
   } else {
-    const fills = slit.edges.map((c, i, a) => {
-      const [yyy, yy] = c.map(cc => cc * geo.sin)
-      return [Math.min(-yyy, -yy), Math.max(Math.abs(-yyy + yy), 1), colours(i)]
+    // const fills = slit.edges.map((c, i, a) => {
+    //   const [yyy, yy] = c.map(cc => cc * geo.sin)
+    //   return [Math.min(-yyy, -yy), Math.max(Math.abs(-yyy + yy), 1), colours(i)]
+    // })
+    // cosineCurve(c, wave, 300, pos.phaseDiagram.y, [-150, 650], 0, 4, 0, 'black', fills)
+    const waveFunc2 = transformFunc(waveFunc, 4, 1 / 4)
+    sketchFunction(c, new Vec(300, pos.phaseDiagram.y), [-150, 500], waveFunc2, 'black')
+    slit.edges.forEach((v, i, a) => {
+    const [st, ed] = v.map(cc => cc * geo.sin * -1 * 4)
+    // const widthWithMin = [st, Math.max(ed, st + 4)]
+    const widthWithMin = [Math.min(st, ed), Math.max(st, ed) + 4]
+    sketchFunction(c, new Vec(300, pos.phaseDiagram.y), widthWithMin, waveFunc2, colours(i), true)
+    sketchFunction(c, new Vec(300, pos.phaseDiagram.y), widthWithMin, waveFunc2, 'black', false)
     })
-    cosineCurve(c, wave, 300, pos.phaseDiagram.y, [-150, 500], 0, 4, 0, 'black', fills)
+
     drawLine(c, 300, 600, 0, 200, 'black')
   }
 
@@ -107,8 +146,12 @@ function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale, switch
   drawLine(c, ...pos.phaseDiagram.addXY(100, 0), ...ray.modulatedResultant.scale(wave.amplitude * slit.number), 'black')
 
   // Resultant sin wave and phasor at right
-  const newWave2 = { amplitude: resultAmpitude * viewScale.intensity, length: wave.length, phase: ray.modulatedResultant.phase - Math.PI / 2 }
-  cosineCurve(c, newWave2, pos.screen.x, screenDisplacement, [0, wave.phase * wave.length], 0, 1, 0, 'black')
+  // const newWave2 = { amplitude: resultAmpitude * viewScale.intensity, length: wave.length, phase: ray.modulatedResultant.phase - Math.PI / 2 }
+  // cosineCurve(c, newWave2, pos.screen.x, screenDisplacement + 10, [0, wave.phase * wave.length], 0, 1, 0, 'black')
+  
+  const waveFunc4 = transformFunc(Math.cos, resultAmpitude * viewScale.intensity, 1 / wave.length, -ray.modulatedResultant.phase + Math.PI / 2 )
+  sketchFunction(c, new Vec(pos.screen.x, screenDisplacement), [0, wave.phase * wave.length], waveFunc4)
+  
   drawLine(c, pos.screen.x, screenDisplacement, ...wavePhasor, 'black')
 }
 

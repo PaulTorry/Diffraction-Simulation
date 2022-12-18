@@ -7,29 +7,43 @@ import { Vec } from '../Vec.js'
 *  pd, path difference;       scale (both x and y are muliplied to the screen)
 */
 
-function cosineCurve (c, w, originX, originY, [start, length] = [0, 200], pd = 0, scale = 1, deflectionAngle = 0, colour = 'black', fill = [[0, 0, 'black']], trigFunc = Math.cos) {
-  const dispAtX = (x, rectFunc = (a) => a) => rectFunc(w.amplitude * trigFunc(((x + pd)) / (w.length) - w.phase))
-  const pageVec = (x, y) => new Vec(x, y).rotate(deflectionAngle).scale(scale).addXY(originX, originY)
-  const plot = (x, dx, rectFunc) => {
-    c.beginPath()
-    c.moveTo(...pageVec(x, 0))
-    for (let dl = x; dl <= x + dx; dl += 1 / scale) {
-      c.lineTo(...pageVec(dl, dispAtX(dl, rectFunc)))
-    }
-    c.lineTo(...pageVec(x + dx, 0))
-  }
-  c.strokeStyle = colour
-  plot(start / scale, length / scale)
-  c.stroke()
+// function cosineCurve (c, w, originX, originY, [start, length] = [0, 200], pd = 0, scale = 1, deflectionAngle = 0, colour = 'black', fill = [[0, 0, 'black']], trigFunc = Math.cos) {
+//   const dispAtX = (x, rectFunc = (a) => a) => rectFunc(w.amplitude * trigFunc(((x + pd)) / (w.length) - w.phase))
+//   const pageVec = (x, y) => new Vec(x, y).rotate(deflectionAngle).scale(scale).addXY(originX, originY)
+//   const plot = (x, dx, rectFunc) => {
+//     c.beginPath()
+//     c.moveTo(...pageVec(x, 0))
+//     for (let dl = x; dl <= x + dx; dl += 1 / scale) {
+//       c.lineTo(...pageVec(dl, dispAtX(dl, rectFunc)))
+//     }
+//     c.lineTo(...pageVec(x + dx, 0))
+//   }
+//   c.strokeStyle = colour
+//   plot(start / scale, length / scale)
+//   c.stroke()
 
-  if (fill) {
-    for (const [x, dx, col, func] of fill) {
-      c.fillStyle = col
-      plot(x, dx, func)
-      c.stroke()
-      c.fill()
-    }
+//   if (fill) {
+//     for (const [x, dx, col, func] of fill) {
+//       c.fillStyle = col
+//       plot(x, dx, func)
+//       c.stroke()
+//       c.fill()
+//     }
+//   }
+// }
+
+function sketchFunction (c, origin, [start, length] = [0, 200], func = Math.cos, colour = 'black', fill = false, angle = 0) {
+  const pageVec = (x, y) => new Vec(x, y).rotate(angle).add(origin)
+  c.strokeStyle = colour
+  c.beginPath()
+  c.moveTo(...pageVec(start, 0))
+  for (let dl = start; dl <= length; dl += 1) {
+    c.lineTo(...pageVec(dl, func(dl)))
   }
+  c.lineTo(...pageVec(length, 0))
+  c.stroke()
+  if (fill) { c.fillStyle = colour; c.fill() }
+  c.beginPath()
 }
 
 function drawLine (c, x1, y1, dx, dy, color) {
@@ -58,4 +72,4 @@ function drawTrace (cx, array, startX = 0, startY = 0, colour = 'rgba(0, 0, 0, 0
   cx.stroke()
 }
 
-export { drawLine, drawTrace, cosineCurve }
+export { drawLine, drawTrace, sketchFunction }
