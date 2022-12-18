@@ -1,12 +1,5 @@
 import { Vec } from '../Vec.js'
 
-/*
-*  c, canvas; 
-*  origin (the centre of rotation of the cosine curve, also where phase = w.phase)
-*  [Where the curve starts to draw (can be -ve), where the curve ends] - In local pixels before scaling
-*  pd, path difference;       scale (both x and y are muliplied to the screen)
-*/
-
 function sketchFunction (c, origin, [start, end] = [0, 200], func = Math.cos, colour = 'black', fill = false, angle = 0) {
   const pageVec = (x, y) => new Vec(x, y).rotate(angle).add(origin)
   c.strokeStyle = colour

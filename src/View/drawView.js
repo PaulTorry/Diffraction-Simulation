@@ -35,13 +35,6 @@ function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale, switch
   // waves, phasors at slit and at path difference
   let arrowStart = new Vec(0, 0)
 
-  // getSinFill is an array to pass to drawSin which draws the red and blue components on the wave
-  // Work in progress const getSinFill = (a, b) => [[a, b - a, 'blue', (a) => Math.max(a, 0)], [a, b - a, 'red', (a) => Math.min(a, 0)]]
-  // const getSinFill = (aa, bb) => {
-  //   const a = aa; const b = bb - aa
-  //   return [[a, b, 'blue', (a) => Math.max(a, 0)], [a, b, 'red', (a) => Math.min(a, 0)]]
-  // }
-
   /*
   *   The main loop which goes through each edge to draw the sin cures, and phasors (also the phasors at bottom right)
   */
@@ -98,7 +91,6 @@ function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale, switch
       sketchFunction(c, new Vec(300, pos.phaseDiagram.y), widthWithMin, waveFunc2, colours(i), true)
       sketchFunction(c, new Vec(300, pos.phaseDiagram.y), widthWithMin, waveFunc2, 'black', false)
     })
-    //  drawLine(c, 300, 600, 0, 200, 'red')
   }
 
   let resultAmpitude = ray.modulatedResultant.mag * wave.amplitude
@@ -110,7 +102,7 @@ function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale, switch
   }
 
   if (!scale) {
-    const scaleFactor = scale ? 1 : slit.number * (slit.realWidth || 20) / 50
+    const scaleFactor = slit.number * (slit.realWidth || 20) / 50
     resultAmpitude = resultAmpitude * scaleFactor
     wavePhasor = wavePhasor.scale(scaleFactor)
   }
@@ -124,34 +116,8 @@ function drawForground (c, slit, ray, wave, pos, viewScale, { amp, scale, switch
   drawLine(c, pos.screen.x, screenDisplacement, ...wavePhasor, 'black')
 }
 
-// The grating is drawn by rectangles, this function takes the edges of the slit, the top and bottom and makes pairs oy y-coords
-// function drawVerticalGrating (c, { edges: e, firstSlit: f, width: w }, length, xpos, thickness) {
-//   // Add the top and bottom of the grating  flatten to a set of pairs for drawing
-//   // [0].concat(e.flat().map((v) => v + f + length / 2)).concat([length])
-//   //   .reduce((ac, cv, i, ar) => i % 2 ? ac.concat([[ar[i - 1], ar[i]]]) : ac, [])
-//     // draw each pair as a rectangle
-//     capArray(e, 0, length, f + length / 2)
-//     .forEach(([y1, y2], i, a) => { c.fillRect(xpos - thickness, y1, thickness * 2, y2 - y1) })
-// }
-
-// function drawHorizontalGrating (c, { edges: e, firstSlit: f, width: w }, longStart, length, transStart, thickness) {
-//     // draw each pair as a rectangle
-//      capArray(e, longStart, length + longStart, 100)
-//      // draw each pair as a rectangle
-//     .forEach(([x1, x2], i, a) => { c.fillRect(x1, transStart - thickness, x2 - x1, thickness * 2) })
-// }
-
-// function capArray (e, start, end, firstGap) {
-//   return [start].concat(e.flat().map((v) => v + start + firstGap)).concat([end])
-//     .reduce((ac, cv, i, ar) => i % 2 ? ac.concat([[ar[i - 1], ar[i]]]) : ac, [])
-// }
-
-/*
-*  Draws the areas for each section, the screen and the grating
-*/
-
 function drawBackground (c, intensity, pos, amplitude, slit, { scale, show, amp, switchZoom }, viewScale) {
-  function capArray (e, start, end, firstGap) {
+  function addStartEndToArrayAndZip (e, start, end, firstGap) {
     return [start].concat(e.flat().map((v) => v + start + firstGap)).concat([end])
       .reduce((ac, cv, i, ar) => i % 2 ? ac.concat([[ar[i - 1], ar[i]]]) : ac, [])
   }
@@ -164,20 +130,15 @@ function drawBackground (c, intensity, pos, amplitude, slit, { scale, show, amp,
   c.strokeRect(pos.screen.x, 0, pos.screen.dx, pos.topViewXY.y)
 
   // Draws the grating
-  // function drawVerticalGrating (c, { edges: e, firstSlit: f, width: w }, length, xpos, thickness) {
-  // drawVerticalGrating(c, slit, pos.topViewXY.y, pos.grating.x + 100, pos.grating.dx)
-  capArray(slit.edges, 0, pos.topViewXY.y, slit.firstSlit + pos.topViewXY.y / 2)
+  addStartEndToArrayAndZip(slit.edges, 0, pos.topViewXY.y, slit.firstSlit + pos.topViewXY.y / 2)
     .forEach(([y1, y2], i, a) => { c.fillRect(pos.grating.x - pos.grating.dx, y1, pos.grating.dx * 2, y2 - y1) })
   if (switchZoom) {
-    // drawHorizontalGrating(c, slit, 200, pos.phaseDiagram.y - 100, pos.topViewXY.y + 30, pos.grating.dx, true)
-    // function drawHorizontalGrating (c, { edges: e, firstSlit: f, width: w }, longStart, length, transStart, thickness) {
     // draw each pair as a rectangle
-    capArray(slit.edges, 200, pos.phaseDiagram.y + 100, 100)
-    // draw each pair as a rectangle
+    addStartEndToArrayAndZip(slit.edges, 200, pos.phaseDiagram.y + 100, 100)
       .forEach(([x1, x2], i, a) => { c.fillRect(x1, pos.topViewXY.y + 10 - pos.grating.dx, x2 - x1, pos.grating.dx * 2) })
   } else drawLine(c, 300, 600, 0, 200, 'gray')
-  // Draw the intensity traces
 
+  // Draw the intensity traces
   const traceAmplitude = amplitude * viewScale.intensity
   const scaleFactor = scale ? 1 : slit.number * (slit.realWidth || 20) / 50
 
